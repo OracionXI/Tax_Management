@@ -1,0 +1,40 @@
+version: '3'
+services:
+  db:
+    container_name: tax-db
+    image: postgres:15-alpine
+    init: true
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_USER: test
+      POSTGRES_DB: tax_testing
+    ports:
+      - '5432:5432'
+    networks:
+      - TAX-network
+    volumes:
+      - TAX-DB-PGDATA:/var/lib/postgresql/data
+  be:
+    container_name: tax-be
+    build:
+      context: .
+      target: prod
+    image: tax-be
+    init: true
+    depends_on:
+      - db
+    ports:
+      - '8080:8080'
+    networks:
+      - TAX-network
+    environment:
+      BE_PORT: 8080
+
+      DATABASE_URL: postgresql://test:test@db:5432/tax_testing?schema=public&connect_timeout=300
+
+    expose:
+      - '8080'
+volumes:
+  TAX-DB-PGDATA:
+networks:
+  TAX-network:
